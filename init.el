@@ -1,8 +1,9 @@
-;;; init.el --- Bozhidar's Emacs configuration
+;;; init.el --- Derek's Emacs configuration
 ;;
-;; Copyright (c) 2016-2021 Bozhidar Batsov
+;; Copyright (c) 2022 Derek Pappas
 ;;
 ;; Author: Bozhidar Batsov <bozhidar@batsov.dev>
+;; Modified by: Derek Pappas <derekepappas@gmail.com>
 ;; URL: https://github.com/bbatsov/emacs.d
 ;; Keywords: convenience
 
@@ -42,8 +43,8 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-(setq user-full-name "Bozhidar Batsov"
-      user-mail-address "bozhidar@batsov.com")
+(setq user-full-name "Derek Pappas"
+      user-mail-address "derekepappas@gmail.com")
 
 ;; Always load newest byte code
 (setq load-prefer-newer t)
@@ -445,12 +446,12 @@ Start `ielm' if it's not already running."
   (add-hook 'inf-clojure-mode-hook #'paredit-mode)
   (add-hook 'inf-clojure-mode-hook #'rainbow-delimiters-mode))
 
-(use-package cider
-  :ensure t
-  :config
-  (setq nrepl-log-messages t)
-  (add-hook 'cider-repl-mode-hook #'paredit-mode)
-  (add-hook 'cider-repl-mode-hook #'rainbow-delimiters-mode))
+;; (use-package cider
+;;   :ensure t
+;;   :config
+;;   (setq nrepl-log-messages t)
+;;   (add-hook 'cider-repl-mode-hook #'paredit-mode)
+;;   (add-hook 'cider-repl-mode-hook #'rainbow-delimiters-mode))
 
 (use-package flycheck-joker
   :ensure t)
@@ -663,15 +664,15 @@ Start `ielm' if it's not already running."
   (which-key-mode +1)
   (diminish 'which-key-mode))
 
-(use-package undo-tree
-  :ensure t
-  :config
-  ;; autosave the undo-tree history
-  (setq undo-tree-history-directory-alist
-        `((".*" . ,temporary-file-directory)))
-  (setq undo-tree-auto-save-history t)
-  (global-undo-tree-mode +1)
-  (diminish 'undo-tree-mode))
+;;(use-package undo-tree
+;;  :ensure t
+;;  :config
+;;  ;; autosave the undo-tree history
+;;  (setq undo-tree-history-directory-alist
+;;        `((".*" . ,temporary-file-directory)))
+;;  (setq undo-tree-auto-save-history t)
+;;  (global-undo-tree-mode +1)
+;;  (diminish 'undo-tree-mode))
 
 (use-package ace-window
   :ensure t
@@ -752,5 +753,57 @@ Start `ielm' if it's not already running."
 
 (when (file-exists-p custom-file)
   (load custom-file))
+
+
+;; enable some functions
+(put 'downcase-region 'disabled nil)
+(put 'upcase-region 'disabled nil)
+
+;; setup directories
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;\
+;
+
+;; Some file locations are relative to the HOME or the BIN directory
+(defvar use-home)
+(setq use-home (concat (expand-file-name "~") "/"))
+
+(defvar emacs-d-dir)
+(setq emacs-d-dir (concat (expand-file-name use-home) ".emacs.d"))
+
+(defvar elisp-dir)
+(setq elisp-dir (concat (expand-file-name emacs-d-dir) "/lisp"))
+
+;; Tell emacs where is your personal elisp lib dir
+;; this is default dir for extra packages
+(add-to-list 'load-path elisp-dir)
+
+;; macros
+
+(add-to-list 'load-path "~/.emacs.d/macros/")
+
+(message "before")
+
+(defun my-file-exists-p (filename)
+  (if (file-exists-p filename)
+      (load-file filename)
+    (ding)                                              ; From here on is the "else"
+    (message "File does not exist: `%s'" (filename))
+    )
+  )
+
+(message "after")
+
+
+(defvar key-bindings (concat elisp-dir "/key-bindings.el"))
+(message "INFO: .emacs: loading file `%s'" key-bindings)
+(my-file-exists-p key-bindings)
+
+(defvar my-virtualenvwrapper (concat elisp-dir "/my-virtualenvwrapper.el"))
+(message "INFO: .emacs: loading file `%s'" my-virtualenvwrapper)
+(my-file-exists-p my-virtualenvwrapper)
+
+(message "INFO: .emacs: setup: Include files")
+
 
 ;;; init.el ends here
